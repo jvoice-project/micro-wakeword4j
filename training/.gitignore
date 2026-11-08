@@ -1,0 +1,7 @@
+/.venv-piper/
+/.venv-train/
+/free/
+/microWakeWord/
+/models/
+/piper-sample-generator/
+__pycache__/

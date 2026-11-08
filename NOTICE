@@ -11,3 +11,49 @@ https://www.apache.org/licenses/LICENSE-2.0.
 == Source Code
 
 https://github.com/jvoice-project/micro-wakeword4j
+
+== Third-party Content
+
+microWakeWord models alexa, hey_jarvis and hey_mycroft
+(src/main/resources/io/github/jvoiceproject/microwakeword/<model>.tflite and <model>.json),
+copied from models/v2 of the ESPHome micro_wake_word model collection
+* License: Apache License, Version 2.0, see LICENSE-micro-wake-word-models and NOTICE-micro-wake-word-models
+* Copyright: 2024-2026 Open Home Foundation
+* Project: https://github.com/esphome/micro-wake-word-models
+* Checksums (sha256):
+  alexa.tflite        9011a8155b04de858c48038529235cbc0e42e9fca05a55bf588cb80a653a723b
+  hey_jarvis.tflite   21a7976add39ee24ec96c63d96b7aaa18e24d1d9824b963e451da8feb4b78b77
+  hey_mycroft.tflite  c2a9b6ed51182db72e014781d5a4ece1929dc232a40b5b4be384f0295f0e1571
+
+microWakeWord models hey_jeeves and hey_openhab
+(src/main/resources/io/github/jvoiceproject/microwakeword/<model>.tflite and <model>.json),
+trained by the jVoice project with microWakeWord and the pipeline in training/
+* License: Apache License, Version 2.0
+* Copyright: 2026 Contributors to micro-wakeword4j
+* Training data: audio that may be used commercially, listed with its licenses in training/DATA_SOURCES.md.
+  The credits its licenses ask for are in training/attribution/.
+* Checksums (sha256):
+  hey_jeeves.tflite   a0ec0670df47244f9e4ac40c38c1647bfa9624e85ad355e4d31c9ea04cf156d1
+  hey_openhab.tflite  97a998211fa6a930063693b2265cab6927fa3af012be66523deba5f2d1dcc43b
+
+Audio frontend (MicroFrontend.java) and integer kernels (Multiplier.java, Program.java),
+ported to Java from TensorFlow Lite Micro's microfrontend and TensorFlow Lite 2.17.1's reference kernels
+* License: Apache License, Version 2.0
+* Copyright: The TensorFlow Authors
+* Project: https://github.com/tensorflow/tensorflow
+
+Fixed-point FFT (Fft.java), ported to Java from KISS FFT as included in the microfrontend
+* License: BSD 3-clause, see LICENSE-kissfft
+* Copyright: 2003-2010, Mark Borgerding
+* Project: https://github.com/mborgerding/kissfft
+
+Test audio (src/test/resources/audio, except hey_jeeves_*.wav and hey_openhab_*.wav) and the
+computer model (src/test/resources/models), copied from the pymicro-wakeword tests
+* License: Apache License, Version 2.0
+* Project: https://github.com/OHF-Voice/pymicro-wakeword
+* Checksum of computer.tflite (sha256): 292108d77465a8f879796b6cd4e62306772b73af9d12ec33b2080ff36fd95db6
+
+Test audio hey_jeeves_*.wav and hey_openhab_*.wav (src/test/resources/audio),
+synthesized with the Piper en_US-libritts-high voice by Michael Hansen, trained on LibriTTS
+* License: Creative Commons Attribution 4.0 (CC BY 4.0)
+* Project: https://huggingface.co/rhasspy/piper-voices

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "hey_openhab",
+    "wake_word": "Hey openHAB",
+    "spellings": ["hey open hab", "hey, open hab", "hey openhab"],
+    "samples_per_spelling": 2000,
+    "adversarial": ["open hab", "I use open hab at home", "hey open", "hey, open up", "open tab", "open lab",
+                    "open hub", "hey oprah", "hey, open the door", "hey, open it", "open it", "hello"],
+    "samples_per_adversarial": 1000,
+    "probability_cutoff": 0.99
+  },
+  {
+    "id": "hey_jeeves",
+    "wake_word": "Hey Jeeves",
+    "spellings": ["hey jeeves", "hey, jeeves", "hey jeeves."],
+    "samples_per_spelling": 2000,
+    "adversarial": ["jeeves", "hey", "I asked jeeves", "hey jeans", "hey cheese", "hey steve", "hey eve", "hey keys",
+                    "hey geez", "hey jesus", "hey, chief", "hey, leave it"],
+    "samples_per_adversarial": 1000,
+    "probability_cutoff": 0.77
+  }
+]

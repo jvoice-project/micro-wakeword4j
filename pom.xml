@@ -19,12 +19,6 @@
 
   <developers>
     <developer>
-      <id>florian-h05</id>
-      <name>Florian Hotze</name>
-      <email>dev@florianhotze.com</email>
-      <organizationUrl>https://github.com/florian-h05</organizationUrl>
-    </developer>
-    <developer>
       <id>digitaldan</id>
       <name>Dan Cunningham</name>
       <email>dan@digitaldan.com</email>
@@ -58,7 +52,49 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <!-- the NOTICE holds the attribution of the ported TensorFlow code and the bundled models -->
+      <resource>
+        <targetPath>META-INF</targetPath>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+        </includes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <!-- the test audio of the tests jar needs its attribution -->
+      <testResource>
+        <targetPath>META-INF</targetPath>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+        </includes>
+      </testResource>
+    </testResources>
     <plugins>
+      <!-- Jar Plugin to attach the test models, audio and reference data as JAR, which micro-wakeword4j-wasm tests with -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <id>attach-tests</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Source Plugin to attach sources as JAR -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

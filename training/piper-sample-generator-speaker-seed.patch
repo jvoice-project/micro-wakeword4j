@@ -1,0 +1,234 @@
+diff --git a/piper_sample_generator/__main__.py b/piper_sample_generator/__main__.py
+index 3074fb5..b622b38 100755
+--- a/piper_sample_generator/__main__.py
++++ b/piper_sample_generator/__main__.py
+@@ -5,6 +5,7 @@ import itertools as it
+ import json
+ import logging
+ import os
++import random
+ import unicodedata
+ import wave
+ from collections.abc import Iterable
+@@ -40,6 +41,7 @@ def generate_samples(
+     max_speakers: Optional[int] = None,
+     verbose: bool = False,
+     phoneme_input: bool = False,
++    speaker_seed: Optional[int] = None,
+     **kwargs,
+ ) -> None:
+     """
+@@ -61,6 +63,8 @@ def generate_samples(
+         max_speakers (int): The maximum speaker number to use, if the model is multi-speaker.
+         verbose (bool): Enable or disable more detailed logging messages (default: False).
+         phoneme_input (bool): Set to indicate given input text is phoneme input.
++        speaker_seed (int): Shuffles the order of the speaker pairs with this seed. Without it, the first
++                            samples all mix speaker 0 with each of the others.
+     Returns:
+         None
+     """
+@@ -109,7 +113,10 @@ def generate_samples(
+         )
+     )
+ 
+-    speakers_iter = it.cycle(it.product(range(num_speakers), range(num_speakers)))
++    speaker_pairs = list(it.product(range(num_speakers), range(num_speakers)))
++    if speaker_seed is not None:
++        random.Random(speaker_seed).shuffle(speaker_pairs)
++    speakers_iter = it.cycle(speaker_pairs)
+     speakers_batch = list(it.islice(speakers_iter, 0, batch_size))
+     if isinstance(text, str) and os.path.isfile(text):
+         texts = it.cycle(
+@@ -229,6 +236,7 @@ def generate_samples_onnx(
+     noise_scale_ws: Tuple[float, ...] = (0.8,),
+     max_speakers: Optional[int] = None,
+     phoneme_input: bool = False,
++    speaker_seed: Optional[int] = None,
+     **kwargs,
+ ) -> None:
+     """
+@@ -247,6 +255,8 @@ def generate_samples_onnx(
+         noise_scale_ws (List[float]): A parameter for the stochastic duration of words/phonemes.
+         max_speakers (int): The maximum speaker number to use, if the model is multi-speaker.
+         phoneme_input (bool): Set to indicate given input text is phoneme input.
++        speaker_seed (int): Shuffles the order of the speaker and setting combinations with this seed. Without it,
++                            the first samples all use the first settings, with speaker 0, 1, 2 and so on.
+ 
+     Returns:
+         None
+@@ -266,14 +276,16 @@ def generate_samples_onnx(
+     output_dir.mkdir(parents=True, exist_ok=True)
+ 
+     sample_idx = 0
+-    settings_iter = it.cycle(
+-        it.product(
+-            voices,
+-            length_scales,
+-            noise_scales,
+-            noise_scale_ws,
++    combinations = []
++    for voice in voices:
++        num_speakers = voice.config.num_speakers
++        if max_speakers is not None:
++            num_speakers = min(num_speakers, max_speakers)
++        combinations.extend(
++            it.product([voice], range(num_speakers), length_scales, noise_scales, noise_scale_ws)
+         )
+-    )
++    if speaker_seed is not None:
++        random.Random(speaker_seed).shuffle(combinations)
+ 
+     if isinstance(text, str) and os.path.exists(text):
+         texts = it.cycle(
+@@ -291,77 +303,72 @@ def generate_samples_onnx(
+     if file_names:
+         file_names = it.cycle(file_names)
+ 
+-    for voice, length_scale, noise_scale, noise_w_scale in settings_iter:
+-        num_speakers = voice.config.num_speakers
+-        if max_speakers is not None:
+-            num_speakers = min(num_speakers, max_speakers)
++    for voice, speaker_id, length_scale, noise_scale, noise_w_scale in it.cycle(combinations):
++        if isinstance(file_names, it.cycle):
++            wav_path = output_dir / next(file_names)
++        else:
++            wav_path = output_dir / f"{sample_idx}.wav"
+ 
+-        for speaker_id in range(num_speakers):
+-            if isinstance(file_names, it.cycle):
+-                wav_path = output_dir / next(file_names)
+-            else:
+-                wav_path = output_dir / f"{sample_idx}.wav"
+-
+-            text_input = next(texts)
+-
+-            if phoneme_input:
+-                # For ONNX models with phoneme input, build phoneme IDs manually
+-                phonemes = list(unicodedata.normalize("NFD", text_input))
+-
+-                # Build phoneme IDs similar to get_phonemes function
+-                id_map = voice.config.phoneme_id_map
+-
+-                # Beginning of utterance
+-                phoneme_ids = list(id_map.get("^", [1]))  # Default to [1] if not found
+-                phoneme_ids.extend(id_map.get("_", [0]))  # Default to [0] if not found
+-
+-                # Add phonemes
+-                for phoneme in phonemes:
+-                    p_ids = id_map.get(phoneme)
+-                    if p_ids is not None:
+-                        phoneme_ids.extend(p_ids)
+-                        phoneme_ids.extend(id_map.get("_", [0]))
+-                    else:
+-                        _LOGGER.warning(
+-                            "Phoneme '%s' not found in model's phoneme map", phoneme
+-                        )
+-
+-                # End of utterance
+-                phoneme_ids.extend(id_map.get("$", [2]))  # Default to [2] if not found
+-
+-                # Generate audio from phoneme IDs
+-                syn_config = SynthesisConfig(
+-                    speaker_id=speaker_id,
+-                    length_scale=length_scale,
+-                    noise_scale=noise_scale,
+-                    noise_w_scale=noise_w_scale,
+-                )
+-                audio = voice.phoneme_ids_to_audio(phoneme_ids, syn_config)
++        text_input = next(texts)
+ 
+-                # Convert to int16 and write to WAV
+-                audio_int16 = audio_float_to_int16(audio[np.newaxis, :])
+-                wav_file: wave.Wave_write = wave.open(str(wav_path), "wb")
+-                with wav_file:
+-                    wav_file.setframerate(voice.config.sample_rate)
+-                    wav_file.setsampwidth(2)
+-                    wav_file.setnchannels(1)
+-                    wav_file.writeframes(audio_int16.flatten())
+-            else:
+-                with wave.open(str(wav_path), "wb") as wav_file:
+-                    voice.synthesize_wav(
+-                        text_input,
+-                        wav_file=wav_file,
+-                        syn_config=SynthesisConfig(
+-                            speaker_id=speaker_id,
+-                            length_scale=length_scale,
+-                            noise_scale=noise_scale,
+-                            noise_w_scale=noise_w_scale,
+-                        ),
++        if phoneme_input:
++            # For ONNX models with phoneme input, build phoneme IDs manually
++            phonemes = list(unicodedata.normalize("NFD", text_input))
++
++            # Build phoneme IDs similar to get_phonemes function
++            id_map = voice.config.phoneme_id_map
++
++            # Beginning of utterance
++            phoneme_ids = list(id_map.get("^", [1]))  # Default to [1] if not found
++            phoneme_ids.extend(id_map.get("_", [0]))  # Default to [0] if not found
++
++            # Add phonemes
++            for phoneme in phonemes:
++                p_ids = id_map.get(phoneme)
++                if p_ids is not None:
++                    phoneme_ids.extend(p_ids)
++                    phoneme_ids.extend(id_map.get("_", [0]))
++                else:
++                    _LOGGER.warning(
++                        "Phoneme '%s' not found in model's phoneme map", phoneme
+                     )
+ 
+-            sample_idx += 1
+-            if sample_idx >= max_samples:
+-                return
++            # End of utterance
++            phoneme_ids.extend(id_map.get("$", [2]))  # Default to [2] if not found
++
++            # Generate audio from phoneme IDs
++            syn_config = SynthesisConfig(
++                speaker_id=speaker_id,
++                length_scale=length_scale,
++                noise_scale=noise_scale,
++                noise_w_scale=noise_w_scale,
++            )
++            audio = voice.phoneme_ids_to_audio(phoneme_ids, syn_config)
++
++            # Convert to int16 and write to WAV
++            audio_int16 = audio_float_to_int16(audio[np.newaxis, :])
++            wav_file: wave.Wave_write = wave.open(str(wav_path), "wb")
++            with wav_file:
++                wav_file.setframerate(voice.config.sample_rate)
++                wav_file.setsampwidth(2)
++                wav_file.setnchannels(1)
++                wav_file.writeframes(audio_int16.flatten())
++        else:
++            with wave.open(str(wav_path), "wb") as wav_file:
++                voice.synthesize_wav(
++                    text_input,
++                    wav_file=wav_file,
++                    syn_config=SynthesisConfig(
++                        speaker_id=speaker_id,
++                        length_scale=length_scale,
++                        noise_scale=noise_scale,
++                        noise_w_scale=noise_w_scale,
++                    ),
++                )
++
++        sample_idx += 1
++        if sample_idx >= max_samples:
++            return
+ 
+     _LOGGER.info("Done")
+ 
+@@ -595,6 +602,11 @@ def main() -> int:
+     parser.add_argument(
+         "--phoneme-input", action="store_true", help="Treat input text as phoneme input"
+     )
++    parser.add_argument(
++        "--speaker-seed",
++        type=int,
++        help="Shuffle the order of the speakers with this seed (default: speaker 0 first, then 1, ...)",
++    )
+     parser.add_argument("--verbose", action="store_true")
+     args = parser.parse_args().__dict__
+ 
