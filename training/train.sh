@@ -1,12 +1,19 @@
 #!/bin/sh
 # Trains the given wake word ids, or every one in wake_words.json, skipping those that already have a model.
 # Each logs to free/<id>/training.log. Run prepare.py first.
-cd "$(dirname "$0")" || exit 1
+set -eu
+cd "$(dirname "$0")"
 ids=${*:-$(.venv-train/bin/python -c "import json; print(' '.join(w['id'] for w in json.load(open('wake_words.json'))))")}
 for id in $ids; do
     if [ -f "free/$id/trained/tflite_stream_state_internal_quant/stream_state_internal_quant.tflite" ]; then
+        echo "already trained: $id"
         continue
     fi
+    if [ ! -f "free/$id/training_parameters.yaml" ]; then
+        echo "missing free/$id/training_parameters.yaml, run prepare.py first" >&2
+        exit 1
+    fi
+    echo "training $id (logging to free/$id/training.log)"
     .venv-train/bin/python -m microwakeword.model_train_eval \
         --training_config="free/$id/training_parameters.yaml" \
         --train 1 \
