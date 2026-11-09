@@ -5,7 +5,7 @@
 
   <groupId>io.github.jvoice-project</groupId>
   <artifactId>micro-wakeword4j</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <name>micro-wakeword4j</name>
   <description>A plain Java inference library for microWakeWord</description>
   <url>https://github.com/jvoice-project/micro-wakeword4j</url>
@@ -29,7 +29,7 @@
   <scm>
     <connection>scm:git:git://github.com/jvoice-project/micro-wakeword4j.git</connection>
     <developerConnection>scm:git:git://github.com/jvoice-project/micro-wakeword4j.git</developerConnection>
-    <tag>v1.0.0</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/jvoice-project/micro-wakeword4j</url>
   </scm>
 
