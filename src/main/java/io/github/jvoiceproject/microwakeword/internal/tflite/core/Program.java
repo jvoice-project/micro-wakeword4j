@@ -713,13 +713,17 @@ public final class Program {
             if (in.length != 4 || out.length != 4 || in[0] != out[0]) {
                 throw new IOException("Convolution tensors must have NHWC shapes");
             }
-            if (in[3] == 0) {
-                throw new IOException("Convolution input has no channels");
+            if (in[3] == 0 || out[3] == 0) {
+                throw new IOException("Convolution input or output has no channels");
             }
             if (strideHeight <= 0
+                    || strideHeight > 1024
                     || strideWidth <= 0
+                    || strideWidth > 1024
                     || dilationHeight <= 0
-                    || dilationWidth <= 0) {
+                    || dilationHeight > 1024
+                    || dilationWidth <= 0
+                    || dilationWidth > 1024) {
                 throw new IOException("Invalid convolution stride or dilation");
             }
             if (padding != PADDING_SAME && padding != PADDING_VALID) {
@@ -779,6 +783,12 @@ public final class Program {
             if (filterScales.length != 1 && filterScales.length != channels) {
                 throw new IOException(
                         "Filter " + filter.name() + " has the wrong number of scales");
+            }
+            for (long zeroPoint : filter.zeroPoint()) {
+                if (zeroPoint != 0) {
+                    throw new IOException(
+                            "Filter " + filter.name() + " must have zero points of 0");
+                }
             }
             Multiplier[] multipliers = new Multiplier[filterScales.length];
             for (int i = 0; i < filterScales.length; i++) {
