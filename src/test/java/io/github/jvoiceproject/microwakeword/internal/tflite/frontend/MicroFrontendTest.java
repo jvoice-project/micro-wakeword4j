@@ -17,9 +17,9 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal.tflite.frontend;
 
-import io.github.jvoiceproject.microwakeword.internal.tflite.frontend.MicroFrontend;
+import io.github.jvoiceproject.microwakeword.TestResources;
 
 import java.io.IOException;
 import java.util.ArrayList;

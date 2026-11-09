@@ -42,8 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * the output of the microfrontend C library and of the LiteRT reference kernels for them, see
  * {@code scripts/generate_reference.py}.
  */
-final class TestResources {
-    static final List<String> WAVS =
+public final class TestResources {
+    public static final List<String> WAVS =
             List.of(
                     "alexa_1.wav",
                     "alexa_2.wav",
@@ -61,7 +61,7 @@ final class TestResources {
     private TestResources() {}
 
     /** Samples of a 16 kHz 16-bit mono WAV file. */
-    static short[] wav(String name) throws IOException {
+    public static short[] wav(String name) throws IOException {
         byte[] wav = bytes("/audio/" + name);
         ByteBuffer buffer = ByteBuffer.wrap(wav).order(ByteOrder.LITTLE_ENDIAN);
         int offset = 12;
@@ -82,7 +82,7 @@ final class TestResources {
     }
 
     /** The complete frames of a stream. */
-    static short[][] frames(short[] samples) {
+    public static short[][] frames(short[] samples) {
         short[][] frames = new short[samples.length / MicroWakeWord.FRAME_SIZE][];
         for (int i = 0; i < frames.length; i++) {
             int start = i * MicroWakeWord.FRAME_SIZE;
@@ -92,7 +92,7 @@ final class TestResources {
     }
 
     /** Features of the C frontend, one line of 40 values per frame. */
-    static int[][] referenceFeatures(String wav) throws IOException {
+    public static int[][] referenceFeatures(String wav) throws IOException {
         String name = "/reference/features-" + wav.replace(".wav", ".txt");
         return lines(name).stream().map(TestResources::ints).toArray(int[][]::new);
     }
