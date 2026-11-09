@@ -22,7 +22,7 @@ from pymicro_features import MicroFrontend
 
 ROOT = Path(__file__).resolve().parent.parent
 MODEL_DIRS = [
-    ROOT / "src/main/resources/io/github/jvoiceproject/microwakeword",
+    ROOT / "src/main/resources/io/github/jvoiceproject/microwakeword/models",
     ROOT / "src/test/resources/models",
 ]
 AUDIO_DIR = ROOT / "src/test/resources/audio"

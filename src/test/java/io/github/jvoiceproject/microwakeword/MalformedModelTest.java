@@ -223,7 +223,7 @@ public class MalformedModelTest {
     }
 
     private static byte[] resource(String name) throws IOException {
-        try (InputStream in = WakeWordModel.class.getResourceAsStream(name)) {
+        try (InputStream in = WakeWordModel.class.getResourceAsStream("models/" + name)) {
             return in.readAllBytes();
         }
     }

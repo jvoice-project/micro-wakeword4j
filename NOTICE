@@ -15,7 +15,7 @@ https://github.com/jvoice-project/micro-wakeword4j
 == Third-party Content
 
 microWakeWord models alexa, hey_jarvis and hey_mycroft
-(src/main/resources/io/github/jvoiceproject/microwakeword/<model>.tflite and <model>.json),
+(src/main/resources/io/github/jvoiceproject/microwakeword/models/<model>.tflite and <model>.json),
 copied from models/v2 of the ESPHome micro_wake_word model collection
 * License: Apache License, Version 2.0, see LICENSE-micro-wake-word-models and NOTICE-micro-wake-word-models
 * Copyright: 2024-2026 Open Home Foundation
@@ -26,7 +26,7 @@ copied from models/v2 of the ESPHome micro_wake_word model collection
   hey_mycroft.tflite  c2a9b6ed51182db72e014781d5a4ece1929dc232a40b5b4be384f0295f0e1571
 
 microWakeWord models hey_jeeves and hey_openhab
-(src/main/resources/io/github/jvoiceproject/microwakeword/<model>.tflite and <model>.json),
+(src/main/resources/io/github/jvoiceproject/microwakeword/models/<model>.tflite and <model>.json),
 trained by the jVoice project with microWakeWord and the pipeline in training/
 * License: Apache License, Version 2.0
 * Copyright: 2026 Contributors to micro-wakeword4j

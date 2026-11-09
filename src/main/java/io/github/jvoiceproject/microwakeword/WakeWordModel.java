@@ -173,7 +173,7 @@ public final class WakeWordModel {
     }
 
     private static byte[] resource(String name) throws IOException {
-        try (InputStream in = WakeWordModel.class.getResourceAsStream(name)) {
+        try (InputStream in = WakeWordModel.class.getResourceAsStream("models/" + name)) {
             if (in == null) {
                 throw new IOException("Missing " + name);
             }
