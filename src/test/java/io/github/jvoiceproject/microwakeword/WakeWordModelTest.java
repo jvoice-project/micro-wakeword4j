@@ -70,6 +70,33 @@ public class WakeWordModelTest {
         assertEquals("computer", model.getWakeWord());
         assertEquals(0.97, model.getProbabilityCutoff());
         assertEquals(5, model.getSlidingWindowSize());
+        assertEquals("WakeWordModel[computer]", model.toString());
+    }
+
+    @Test
+    public void rejectsUnsupportedManifestSettings() throws Exception {
+        byte[] computer = computerModel();
+        String valid = MANIFEST.formatted("model.tflite", 2);
+
+        for (String invalid :
+                List.of(
+                        "[]",
+                        valid.replace("\"type\": \"micro\"", "\"type\": \"other\""),
+                        valid.replace("\"micro\": {", "\"other\": {"),
+                        valid.replace("\"wake_word\": \"computer\"", "\"wake_word\": \"\""),
+                        valid.replace("\"feature_step_size\": 10", "\"feature_step_size\": 20"),
+                        valid.replace(
+                                "\"probability_cutoff\": 0.97", "\"probability_cutoff\": -0.1"),
+                        valid.replace(
+                                "\"probability_cutoff\": 0.97", "\"probability_cutoff\": 1.1"),
+                        valid.replace("\"probability_cutoff\": 0.97,\n", ""),
+                        valid.replace("\"sliding_window_size\": 5", "\"sliding_window_size\": 0"),
+                        valid.replace(
+                                "\"sliding_window_size\": 5", "\"sliding_window_size\": 1001"),
+                        valid.replace("\"sliding_window_size\": 5", "\"sliding_window_size\": 2.5"),
+                        valid.replace("[\"en\"]", "[1]"))) {
+            assertThrows(IOException.class, () -> WakeWordModel.load(invalid, computer), invalid);
+        }
     }
 
     @Test

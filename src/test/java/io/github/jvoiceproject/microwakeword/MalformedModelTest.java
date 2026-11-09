@@ -28,6 +28,9 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -39,6 +42,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** Models and manifests made to break the loader, which must fail with an IOException. */
 public class MalformedModelTest {
+    private static final int CONV_2D = 3;
     private static final int CALL_ONCE = 129;
 
     @TempDir Path directory;
@@ -102,6 +106,63 @@ public class MalformedModelTest {
     }
 
     @Test
+    public void rejectsModelsThatNeedTooMuchMemory() {
+        assertThrows(
+                IOException.class,
+                () -> load(model -> model.setInt(model.inputShape() + 8, 26_200)));
+    }
+
+    @Test
+    public void rejectsTensorsWithMultipleWriters() {
+        assertThrows(
+                IOException.class,
+                () ->
+                        load(
+                                model -> {
+                                    int firstOut =
+                                            model.buffer.getInt(
+                                                    model.vector(model.operator(1), 2) + 4);
+                                    model.setInt(model.vector(model.operator(2), 2) + 4, firstOut);
+                                }));
+    }
+
+    @Test
+    public void rejectsInvalidConvolutionStride() {
+        for (int stride : new int[] {0, -1, 1025, Integer.MAX_VALUE}) {
+            assertThrows(
+                    IOException.class,
+                    () ->
+                            load(
+                                    model -> {
+                                        int conv = model.findOperator(CONV_2D);
+                                        int options = model.indirect(model.field(conv, 4));
+                                        model.setInt(model.field(options, 1), stride);
+                                    }),
+                    "stride " + stride);
+        }
+    }
+
+    @Test
+    public void rejectsNonZeroConvolutionFilterZeroPoints() {
+        assertThrows(
+                IOException.class,
+                () ->
+                        load(
+                                model -> {
+                                    int conv = model.findOperator(CONV_2D);
+                                    int filterIndex =
+                                            model.buffer.getInt(model.vector(conv, 1) + 8);
+                                    int filter =
+                                            model.element(
+                                                    model.vector(model.mainGraph(), 0),
+                                                    filterIndex);
+                                    int zeroPoints =
+                                            model.vector(model.indirect(model.field(filter, 4)), 3);
+                                    model.setLong(zeroPoints + 4, 1);
+                                }));
+    }
+
+    @Test
     public void rejectsDeeplyNestedManifests() {
         assertThrows(IOException.class, () -> Json.parse("[".repeat(200_000)));
         assertDoesNotThrow(() -> Json.parse("[".repeat(64) + "]".repeat(64)));
@@ -112,6 +173,35 @@ public class MalformedModelTest {
         assertThrows(IOException.class, () -> Json.parse("\"\\u-123\""));
         assertThrows(IOException.class, () -> Json.parse("\"\\u+123\""));
         assertEquals("é", Json.parse("\"\\u00e9\""));
+    }
+
+    @Test
+    public void parsesAndRejectsJsonCornerCases() throws IOException {
+        assertEquals(Map.of(), Json.parse("{}"));
+        assertEquals(List.of(true, false), Json.parse("[true, false]"));
+        assertEquals(Arrays.asList(new Object[] {null}), Json.parse("[null]"));
+        assertEquals("\"\\/\b\f\n\r\t", Json.parse("\"\\\"\\\\\\/\\b\\f\\n\\r\\t\""));
+
+        for (String invalid :
+                List.of(
+                        "",
+                        "{} []",
+                        "tru",
+                        "fals",
+                        "nul",
+                        "-",
+                        "1.2.3",
+                        "\"unterminated",
+                        "\"\\",
+                        "\"\\x\"",
+                        "\"\\u12\"",
+                        "\"\\u123g\"",
+                        "{1: 2}",
+                        "{\"a\" 1}",
+                        "{\"a\": 1",
+                        "[1")) {
+            assertThrows(IOException.class, () -> Json.parse(invalid), invalid);
+        }
     }
 
     @Test
@@ -162,7 +252,19 @@ public class MalformedModelTest {
 
         int opcode(int operator) {
             int code = element(vector(indirect(0), 1), getInt(operator, 0));
-            return getInt(code, 3);
+            return Math.max(getByte(code, 0), getInt(code, 3));
+        }
+
+        int findOperator(int opcode) {
+            int operators = vector(mainGraph(), 3);
+            int length = buffer.getInt(operators);
+            for (int i = 0; i < length; i++) {
+                int operator = element(operators, i);
+                if (opcode(operator) == opcode) {
+                    return operator;
+                }
+            }
+            throw new IllegalStateException("No operator with opcode " + opcode);
         }
 
         int field(int table, int field) {
@@ -177,6 +279,11 @@ public class MalformedModelTest {
         private int getInt(int table, int field) {
             int offset = offset(table, field);
             return offset == 0 ? 0 : buffer.getInt(table + offset);
+        }
+
+        private int getByte(int table, int field) {
+            int offset = offset(table, field);
+            return offset == 0 ? 0 : buffer.get(table + offset);
         }
 
         private int offset(int table, int field) {

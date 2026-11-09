@@ -197,6 +197,7 @@ public class MicroWakeWordTest {
         assertFalse(detects(new MicroWakeWord(model, 1), heyMycroft));
         assertEquals(0.25, new MicroWakeWord(model, 0.25).getProbabilityCutoff());
         assertEquals(model.getProbabilityCutoff(), new MicroWakeWord(model).getProbabilityCutoff());
+        assertEquals(model, new MicroWakeWord(model).getModel());
     }
 
     @Test
