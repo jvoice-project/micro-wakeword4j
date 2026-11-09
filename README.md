@@ -105,7 +105,7 @@ The tests compare every feature and every quantized model output with reference 
 * the [LiteRT](https://github.com/google-ai-edge/LiteRT) interpreter with its reference kernels (`BUILTIN_REF`), which use the same integer math as TensorFlow Lite Micro on microcontrollers.
 
 The microfrontend computes its filterbank with floating point math once, and this library matches C builds that round every operation.
-Builds that fuse multiply-adds, as clang does on arm64 by default, compute a slightly different filterbank, which changes the top features a little on some inputs.
+Builds that fuse multiply-adds, as Clang does on arm64 by default, compute a slightly different filterbank, which changes the top features a little on some inputs.
 
 The optimized desktop kernels of TensorFlow Lite, which [pymicro-wakeword](https://github.com/OHF-Voice/pymicro-wakeword) uses, round some intermediate values differently.
 Around a detection their output differs from the reference kernels by up to about 7%, and on the test audio both detect the same wake words.

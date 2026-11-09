@@ -1,6 +1,6 @@
 # Wake word training
 
-This pipeline trained the bundled Hey Jeeves and Hey openHAB models with [microWakeWord](https://github.com/kahrendt/microWakeWord).
+This pipeline trained the bundled "Hey Jeeves" and "Hey openHAB" models with [microWakeWord](https://github.com/kahrendt/microWakeWord).
 It follows microWakeWord's training notebook, with these changes:
 
 - It uses only audio that may be used commercially and needs at most attribution, see [DATA_SOURCES.md](DATA_SOURCES.md).
@@ -8,11 +8,11 @@ It follows microWakeWord's training notebook, with these changes:
 - The samples come from Piper's `en_US-libritts-high` voice, which was trained from scratch on LibriTTS.
   The notebook's `en_US-libritts_r-medium` voice is fine-tuned from a voice whose recordings are licensed for research only.
 - Each phrase is spoken by its own shuffled order of the voice's speakers and speech settings.
-  Without that, the samples of every phrase start with speaker 0, 1, 2 and so on, all at the same speed.
+  Without that, the samples of every phrase start with speaker 0, 1, 2, and so on, all at the same speed.
 - The silence the voice leaves after the speech is cut, so each sample ends where its last word does.
-  Without that, about 0.1 seconds of silence remains, and Hey openHAB triggered on conversation five times as often.
+  Without that, about 0.1 seconds of silence remains, and "Hey openHAB" triggered on conversation five times as often.
 - The model learns to stay quiet anywhere in a sound-alike phrase and in up to 1.2 seconds of silence after it, not only just after it ends.
-  Without that, phrases such as "I use open hab at home" and "hey open" still triggered Hey openHAB.
+  Without that, phrases such as "I use open hab at home" and "hey open" still triggered "Hey openHAB".
 
 ## Setup
 
@@ -44,7 +44,7 @@ curl -fL -o models/en_US-libritts-high.onnx.json "$voice/en_US-libritts-high.onn
 
 ## Training
 
-[wake_words.json](wake_words.json) lists each wake word with its spellings, its sound-alike phrases and its cutoff.
+[wake_words.json](wake_words.json) lists each wake word with its spellings, its sound-alike phrases, and its cutoff.
 
 ```sh
 .venv-train/bin/python prepare.py   # samples, downloads and features, about two hours the first time
