@@ -401,7 +401,10 @@ def write_config(model_dir):
         yaml.dump(config, file)
 
 
+VALID_STEPS = {"samples", "data", "features"}
 steps = sys.argv[1:] or ["samples", "data", "features"]
+if unknown := set(steps) - VALID_STEPS:
+    sys.exit(f"Usage: {sys.argv[0]} [samples|data|features]... (unknown: {' '.join(sorted(unknown))})")
 
 if "samples" in steps:
     for wake_word in WAKE_WORDS:
