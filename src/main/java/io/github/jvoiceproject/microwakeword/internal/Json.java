@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.Map;
  *
  * @author Dan Cunningham - Initial contribution
  */
-final class Json {
+public final class Json {
     /** Deeper nesting than manifests use, and shallow enough to stay well within the stack. */
     private static final int MAX_DEPTH = 64;
 
@@ -43,7 +43,7 @@ final class Json {
         this.text = text;
     }
 
-    static Object parse(String text) throws IOException {
+    public static Object parse(String text) throws IOException {
         Json json = new Json(text);
         Object value = json.value(0);
         json.skipWhitespace();

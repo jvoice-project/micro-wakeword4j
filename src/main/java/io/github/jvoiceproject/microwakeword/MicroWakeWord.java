@@ -19,6 +19,10 @@
  */
 package io.github.jvoiceproject.microwakeword;
 
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.Interpreter;
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.Program;
+import io.github.jvoiceproject.microwakeword.internal.tflite.frontend.MicroFrontend;
+
 import java.util.Arrays;
 
 /**

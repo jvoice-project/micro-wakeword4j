@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal.tflite.core;
 
 import java.util.Arrays;
 
@@ -27,13 +27,13 @@ import java.util.Arrays;
  *
  * @author Dan Cunningham - Initial contribution
  */
-final class Interpreter {
+public final class Interpreter {
     private final Program program;
     private final byte[][][] tensors;
     private final byte[][] variables;
     private final boolean[] called;
 
-    Interpreter(Program program) {
+    public Interpreter(Program program) {
         this.program = program;
         int subgraphs = program.operators.size();
         tensors = new byte[subgraphs][][];
@@ -54,12 +54,12 @@ final class Interpreter {
     }
 
     /** The quantized model input, to be filled before {@link #invoke()}. */
-    byte[] input() {
+    public byte[] input() {
         return tensors[0][program.inputTensor];
     }
 
     /** Runs the main subgraph and returns its quantized output value. */
-    int invoke() {
+    public int invoke() {
         run(0);
         byte output = tensors[0][program.outputTensor][0];
         return program.unsignedOutput ? output & 0xFF : output;
@@ -69,7 +69,7 @@ final class Interpreter {
      * Forgets the stream, so the next {@link #invoke()} initializes the variables again. They are
      * also cleared, for models without an initialization subgraph.
      */
-    void reset() {
+    public void reset() {
         Arrays.fill(called, false);
         for (byte[] variable : variables) {
             Arrays.fill(variable, (byte) 0);

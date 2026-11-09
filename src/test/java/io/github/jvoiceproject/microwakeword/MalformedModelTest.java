@@ -19,6 +19,8 @@
  */
 package io.github.jvoiceproject.microwakeword;
 
+import io.github.jvoiceproject.microwakeword.internal.Json;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;

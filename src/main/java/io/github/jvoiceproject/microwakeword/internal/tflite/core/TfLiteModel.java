@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal.tflite.core;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Dan Cunningham - Initial contribution
  */
-record TfLiteModel(List<Subgraph> subgraphs) {
+public record TfLiteModel(List<Subgraph> subgraphs) {
 
     static final int TYPE_INT32 = 2;
     static final int TYPE_UINT8 = 3;
@@ -52,7 +52,7 @@ record TfLiteModel(List<Subgraph> subgraphs) {
      * @param quantizedDimension the channel dimension of per channel quantization
      * @param data constant contents, {@code null} when computed at runtime
      */
-    record Tensor(
+    public record Tensor(
             String name,
             int[] shape,
             int type,
@@ -80,9 +80,11 @@ record TfLiteModel(List<Subgraph> subgraphs) {
      * @param optionsType TensorFlow Lite {@code BuiltinOptions} type of {@code options}
      * @param options the operator's builtin options table, {@code null} when absent
      */
-    record Operator(int opcode, int[] inputs, int[] outputs, int optionsType, Table options) {}
+    public record Operator(
+            int opcode, int[] inputs, int[] outputs, int optionsType, Table options) {}
 
-    record Subgraph(List<Tensor> tensors, int[] inputs, int[] outputs, List<Operator> operators) {}
+    public record Subgraph(
+            List<Tensor> tensors, int[] inputs, int[] outputs, List<Operator> operators) {}
 
     /**
      * Reads a model. Options tables are read later, so their reads can throw {@link
@@ -90,7 +92,7 @@ record TfLiteModel(List<Subgraph> subgraphs) {
      *
      * @throws IOException when the model can't be read or uses external buffers
      */
-    static TfLiteModel parse(byte[] bytes) throws IOException {
+    public static TfLiteModel parse(byte[] bytes) throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         if (bytes.length < 8
                 || !"TFL3".equals(new String(bytes, 4, 4, StandardCharsets.US_ASCII))) {
@@ -163,7 +165,7 @@ record TfLiteModel(List<Subgraph> subgraphs) {
     }
 
     /** A FlatBuffer table, read through its vtable. */
-    static final class Table {
+    public static final class Table {
         private final ByteBuffer buffer;
         private final int position;
 

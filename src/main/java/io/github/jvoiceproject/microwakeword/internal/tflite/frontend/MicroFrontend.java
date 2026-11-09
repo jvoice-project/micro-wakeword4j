@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal.tflite.frontend;
 
 import java.util.Arrays;
 
@@ -35,10 +35,10 @@ import java.util.Arrays;
  *
  * @author Dan Cunningham - Initial contribution
  */
-final class MicroFrontend {
-    static final int SAMPLE_RATE = 16000;
-    static final int STEP_SIZE = 160;
-    static final int FEATURE_COUNT = 40;
+public final class MicroFrontend {
+    public static final int SAMPLE_RATE = 16000;
+    public static final int STEP_SIZE = 160;
+    public static final int FEATURE_COUNT = 40;
 
     private static final int WINDOW_SIZE = 480;
     private static final int WINDOW_BITS = 12;
@@ -98,6 +98,8 @@ final class MicroFrontend {
     private final long[] accumulated = new long[FEATURE_COUNT + 1];
     private final long[] signal = new long[FEATURE_COUNT];
 
+    public MicroFrontend() {}
+
     /**
      * Adds the next 10 ms of audio.
      *
@@ -105,7 +107,7 @@ final class MicroFrontend {
      * @param features receives {@link #FEATURE_COUNT} features between 0 and 65535
      * @return false while the first window is still filling, so {@code features} is unchanged
      */
-    boolean process(short[] samples, int[] features) {
+    public boolean process(short[] samples, int[] features) {
         System.arraycopy(samples, 0, input, inputUsed, STEP_SIZE);
         inputUsed += STEP_SIZE;
         if (inputUsed < WINDOW_SIZE) {
@@ -133,7 +135,7 @@ final class MicroFrontend {
     }
 
     /** Starts a new stream. */
-    void reset() {
+    public void reset() {
         Arrays.fill(input, (short) 0);
         inputUsed = 0;
         Arrays.fill(noiseEstimate, 0);

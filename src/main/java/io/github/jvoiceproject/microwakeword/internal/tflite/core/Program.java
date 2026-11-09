@@ -17,17 +17,17 @@
  * limitations under the License.
  * #L%
  */
-package io.github.jvoiceproject.microwakeword;
+package io.github.jvoiceproject.microwakeword.internal.tflite.core;
 
-import static io.github.jvoiceproject.microwakeword.TfLiteModel.TYPE_INT32;
-import static io.github.jvoiceproject.microwakeword.TfLiteModel.TYPE_INT8;
-import static io.github.jvoiceproject.microwakeword.TfLiteModel.TYPE_RESOURCE;
-import static io.github.jvoiceproject.microwakeword.TfLiteModel.TYPE_UINT8;
+import static io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.TYPE_INT32;
+import static io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.TYPE_INT8;
+import static io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.TYPE_RESOURCE;
+import static io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.TYPE_UINT8;
 
-import io.github.jvoiceproject.microwakeword.TfLiteModel.Operator;
-import io.github.jvoiceproject.microwakeword.TfLiteModel.Subgraph;
-import io.github.jvoiceproject.microwakeword.TfLiteModel.Table;
-import io.github.jvoiceproject.microwakeword.TfLiteModel.Tensor;
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.Operator;
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.Subgraph;
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.Table;
+import io.github.jvoiceproject.microwakeword.internal.tflite.core.TfLiteModel.Tensor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -48,7 +48,7 @@ import java.util.Map;
  *
  * @author Dan Cunningham - Initial contribution
  */
-final class Program {
+public final class Program {
 
     // TensorFlow Lite BuiltinOperator codes
     private static final int CONCATENATION = 2;
@@ -96,10 +96,10 @@ final class Program {
     final int[] variableSizes;
     final int inputTensor;
     final int outputTensor;
-    final int[] inputShape;
-    final float inputScale;
-    final int inputZeroPoint;
-    final int outputZeroPoint;
+    public final int[] inputShape;
+    public final float inputScale;
+    public final int inputZeroPoint;
+    public final int outputZeroPoint;
     final boolean unsignedOutput;
 
     private Program(Compiler compiler, Tensor input, Tensor output, Subgraph main) {
@@ -121,7 +121,7 @@ final class Program {
      *
      * @throws IOException when the model is invalid or uses unsupported features
      */
-    static Program compile(TfLiteModel model) throws IOException {
+    public static Program compile(TfLiteModel model) throws IOException {
         if (model.subgraphs().isEmpty()) {
             throw new IOException("Model has no subgraphs");
         }

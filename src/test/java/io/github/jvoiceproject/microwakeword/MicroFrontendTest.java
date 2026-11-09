@@ -19,6 +19,8 @@
  */
 package io.github.jvoiceproject.microwakeword;
 
+import io.github.jvoiceproject.microwakeword.internal.tflite.frontend.MicroFrontend;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
